@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'MazerApp',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -42,6 +43,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _veriGetir() async {
     // Daha detaylı kullanım için => https://excuser.herokuapp.com/
 
+    _cevirilmisMetin = "";
+    _mazeretler = [];
+    setState(() {});
+
     final cevap = await get(
       Uri(
         host: "excuser.herokuapp.com",
@@ -68,41 +73,55 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: _veriGetir,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
-      body: ListView(
-        children: <Widget>[
-          for (final mazeret in _mazeretler)
-            Column(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("category: ${mazeret['category']}"),
-                        Text(
-                          mazeret['excuse'],
-                          style: Theme.of(context).textTheme.headline6,
+      body: _mazeretler.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView(
+              children: <Widget>[
+                for (final mazeret in _mazeretler)
+                  Column(
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("category: ${mazeret['category']}"),
+                                Text(
+                                  mazeret['excuse'],
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (_cevirilmisMetin.isNotEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        _cevirilmisMetin,
-                        style: Theme.of(context).textTheme.headline6,
                       ),
-                    ),
+                      if (_cevirilmisMetin.isNotEmpty)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                _cevirilmisMetin,
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
               ],
             ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_mazeretler.isNotEmpty) {
