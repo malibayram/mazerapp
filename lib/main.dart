@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart';
+import 'package:translator/translator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final translator = GoogleTranslator();
   List<Map> _mazeretler = [];
+
+  String _cevirilmisMetin = "";
 
   Future<void> _veriGetir() async {
     // Daha detaylı kullanım için => https://excuser.herokuapp.com/
@@ -65,33 +69,53 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            for (final mazeret in _mazeretler)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("category: ${mazeret['category']}"),
-                      Text(
-                        mazeret['excuse'],
-                        style: Theme.of(context).textTheme.headline6,
-                      ),
-                    ],
+      body: ListView(
+        children: <Widget>[
+          for (final mazeret in _mazeretler)
+            Column(
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("category: ${mazeret['category']}"),
+                        Text(
+                          mazeret['excuse'],
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ),
+                if (_cevirilmisMetin.isNotEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        _cevirilmisMetin,
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () {
+          if (_mazeretler.isNotEmpty) {
+            final mazeret = _mazeretler.first;
+
+            translator.translate(mazeret['excuse'], to: 'tr').then((ceviri) {
+              _cevirilmisMetin = ceviri.text;
+              setState(() {});
+            });
+          }
+        },
+        tooltip: 'Translate',
+        child: const Icon(Icons.translate),
       ),
     );
   }
